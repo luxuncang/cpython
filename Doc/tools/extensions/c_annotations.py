@@ -65,10 +65,7 @@ class Annotations:
                     entry = self.refcount_data[function]
                 except KeyError:
                     entry = self.refcount_data[function] = RCEntry(function)
-                if not refcount or refcount == "null":
-                    refcount = None
-                else:
-                    refcount = int(refcount)
+                refcount = None if not refcount or refcount == "null" else int(refcount)
                 # Update the entry with the new parameter or the result
                 # information.
                 if arg:
@@ -97,11 +94,7 @@ class Annotations:
 
             objtype = par['objtype']
 
-            # Stable ABI annotation. These have two forms:
-            #   Part of the [Stable ABI](link).
-            #   Part of the [Stable ABI](link) since version X.Y.
-            record = self.stable_abi_data.get(name)
-            if record:
+            if record := self.stable_abi_data.get(name):
                 if record['role'] != objtype:
                     raise ValueError(
                         f"Object type mismatch in limited API annotation "
@@ -128,9 +121,7 @@ class Annotations:
             if objtype != 'function':
                 continue
             entry = self.refcount_data.get(name)
-            if not entry:
-                continue
-            elif not entry.result_type.endswith("Object*"):
+            if not entry or entry and not entry.result_type.endswith("Object*"):
                 continue
             if entry.result_refs is None:
                 rc = 'Return value: Always NULL.'
